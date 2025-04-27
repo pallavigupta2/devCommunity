@@ -13,7 +13,7 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.send("DATA SAVED SUCCESUFULLY");
   } catch (err) {
-    res.status(400).send("ERROR SAVING USER...");
+    res.status(400).send("ERROR SAVING USER..."+err.message);
   }
 });
 
@@ -67,11 +67,11 @@ app.patch("/user",async(req,res)=>{
     const userEmail = req.body.emailId
     const userData = req.body
     try{
-        //const updatedData = await userModal.findByIdAndUpdate(userId,userData)
-        const updatedData = await userModal.findOneAndUpdate({emailId:userEmail},userData)
+        const updatedData = await userModal.findByIdAndUpdate(userId,userData,{runValidators:true})
+        //const updatedData = await userModal.findOneAndUpdate({emailId:userEmail},userData)
         res.send("data updated sucessfully")
     }catch (err) {
-        res.status(400).send("Something went wrong!!");
+        res.status(400).send("Something went wrong!!"+err.message);
       }
 })
 
