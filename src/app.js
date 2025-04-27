@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
 const userModal = require("./modals/user");
+const validator = require("validator")
 
 app.use(express.json());
 
@@ -10,6 +11,18 @@ app.post("/signup", async (req, res) => {
   // we are creating an instance of an user modal
   const user = new userModal(req.body);
   try {
+    if(user.skills.length > 10){
+      throw new Error("You should not allowed to enter more than 10 skills!");
+      
+    }
+    if(!validator.isAlpha(user.firstName)){
+      throw new Error("Enter alphabets only");
+      
+    }
+    if(!validator.isAlpha(user.lastName)){
+      throw new Error("Enter alphabets only");
+      
+    }
     await user.save();
     res.send("DATA SAVED SUCCESUFULLY");
   } catch (err) {
@@ -62,11 +75,20 @@ app.delete("/user",async(req,res)=>{
 
 // UPDATE API
 
-app.patch("/user",async(req,res)=>{
-    const userId=req.body.userId
-    const userEmail = req.body.emailId
+app.patch("/user/:userId",async(req,res)=>{
+    const userId=req.params?.userId
     const userData = req.body
     try{
+      const ALLOWED_UPDATEDFEILDS = ["password","gender","aboutUs","photoUrl","skills"]
+      const allowedFeilds = Object.keys(userData).every((feild)=>ALLOWED_UPDATEDFEILDS.includes(feild))
+      if(!allowedFeilds){
+        throw new Error("You cannot updated these data");
+        
+      }
+      if(userData.skills.length > 10){
+        throw new Error("You should not allowed to enter more than 10 skills!");
+        
+      }
         const updatedData = await userModal.findByIdAndUpdate(userId,userData,{runValidators:true})
         //const updatedData = await userModal.findOneAndUpdate({emailId:userEmail},userData)
         res.send("data updated sucessfully")
