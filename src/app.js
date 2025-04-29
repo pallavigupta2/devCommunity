@@ -7,6 +7,7 @@ const { validateSignupData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 
 app.use(express.json()); // Middleware that will parse request data.
 app.use(cookieParser()); // Middleware that will pasrse cookie data and we are able to see that data
@@ -45,12 +46,12 @@ app.post("/login", async (req, res) => {
     if (!userData) {
       throw new Error("Invalid Credentials!");
     }
-    const isPasswordValid = await bcrypt.compare(password, userData.password);
+    const isPasswordValid = await userData.validatePassword(password);
 
     if (isPasswordValid) {
       // Create a jwt token
-      const token = await jwt.sign({ _id: userData._id }, "devCommunity@123");
 
+      const token = await userData.getJWT();
       // store jwt token in cookies
       res.cookie("token", token);
       res.send("Login Successful!");
@@ -63,23 +64,22 @@ app.post("/login", async (req, res) => {
 });
 
 // GET PROFILE DATA
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    const { token } = cookies;
-    if (!token) {
-      throw new Error("Invalid token");
-      
-    }
-    const TokenMessage = await jwt.verify(token, "devCommunity@123");
-    const { _id } = TokenMessage;
-    const userProfileData = await userModal.findById(_id);
-    if (!userProfileData) {
-      throw new Error("User does not exist");
-    }
-    res.send(userProfileData);
+    const userData = req.userData;
+    res.send(userData);
   } catch (err) {
-    res.status(400).send("Something went wrong " +err)
+    res.status(400).send("Something went wrong " + err);
+  }
+});
+
+// POST - Sent connection request api
+app.post("/sentconnectionrequest", userAuth, (req, res) => {
+  try {
+    const userData = req.userData;
+    res.send(userData.firstName + " sent you connection request.");
+  } catch (err) {
+    res.status(400).send("something went wrong!!!!!");
   }
 });
 
