@@ -5,8 +5,11 @@ const userModal = require("./modals/user");
 const validator = require("validator");
 const { validateSignupData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
-app.use(express.json());
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
+app.use(express.json()); // Middleware that will parse request data.
+app.use(cookieParser()); // Middleware that will pasrse cookie data and we are able to see that data
 // Signup API
 app.post("/signup", async (req, res) => {
   try {
@@ -42,15 +45,41 @@ app.post("/login", async (req, res) => {
     if (!userData) {
       throw new Error("Invalid Credentials!");
     }
-    const isPasswordValid = await bcrypt.compare(password, userData.password)
-    
+    const isPasswordValid = await bcrypt.compare(password, userData.password);
+
     if (isPasswordValid) {
+      // Create a jwt token
+      const token = await jwt.sign({ _id: userData._id }, "devCommunity@123");
+
+      // store jwt token in cookies
+      res.cookie("token", token);
       res.send("Login Successful!");
     } else {
       throw new Error("Invalid Credentials...");
     }
   } catch (err) {
     res.status(400).send("Something went wrong " + err);
+  }
+});
+
+// GET PROFILE DATA
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    const { token } = cookies;
+    if (!token) {
+      throw new Error("Invalid token");
+      
+    }
+    const TokenMessage = await jwt.verify(token, "devCommunity@123");
+    const { _id } = TokenMessage;
+    const userProfileData = await userModal.findById(_id);
+    if (!userProfileData) {
+      throw new Error("User does not exist");
+    }
+    res.send(userProfileData);
+  } catch (err) {
+    res.status(400).send("Something went wrong " +err)
   }
 });
 
