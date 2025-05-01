@@ -15,4 +15,29 @@ const validateSignupData = (req) => {
   }
 };
 
-module.exports = {validateSignupData}
+const validateProfileEditData = (req) => {
+  
+  const { firstName, lastName, skills, age, gender, aboutUs, photoUrl } =
+    req.body;
+  const allowedFieldsForEdit = [
+    "firstName",
+    "lastName",
+    "skills",
+    "age",
+    "gender",
+    "aboutUs",
+    "photoUrl",
+  ];
+  const isAllowedForEdit = Object.keys(req.body).every((field) =>
+    allowedFieldsForEdit.includes(field)
+  );
+  if (!isAllowedForEdit) {
+    throw new Error("Not allowed to edit.");
+  } else if (skills?.length > 10) {
+    throw new Error("You should not allowed to enter more than 10 skills!");
+  } else if (aboutUs?.length > 50) {
+    throw new Error("Enter about yourself in 100 characters only.");
+  }
+};
+
+module.exports = { validateSignupData, validateProfileEditData };

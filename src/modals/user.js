@@ -8,9 +8,21 @@ const userSchema = new mongoose.Schema(
     firstName: {
       type: String,
       required: true,
+      validate(value){
+        if(!validator.isAlpha(value)){
+          throw new Error("Enter alphabets only.");
+          
+        }
+      }
     },
     lastName: {
       type: String,
+      validate(value){
+        if(!validator.isAlpha(value)){
+          throw new Error("Enter alphabets only.");
+          
+        }
+      }
     },
     emailId: {
       type: String,
@@ -53,6 +65,7 @@ const userSchema = new mongoose.Schema(
     aboutUs: {
       type: String,
       default: "Hi!, I am a Software Developer.",
+      maxLength:50,
     },
     photoUrl: {
       type: String,
