@@ -2,6 +2,7 @@ const express = require("express");
 const userRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
 const connectionRequestModal = require("../modals/connectionRequest");
+const userModal = require("../modals/user");
 
 // Api to Get all pending request of logged in user
 
@@ -66,4 +67,39 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
   }
 });
 
+// Api for feed(get all users data except user present in connection request table)
+userRouter.get("/feed", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.userData;
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    limit = limit > 50 ? 50 : limit;
+    const skip = (page - 1) * limit;
+    const connectionRequestData = await connectionRequestModal
+      .find({
+        $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+      })
+      .select("fromUserId toUserId");
+    const hideUserInFeed = new Set();
+    connectionRequestData.forEach((request) => {
+      hideUserInFeed.add(request.fromUserId.toString());
+      hideUserInFeed.add(request.toUserId.toString());
+    });
+    const feedUsers = await userModal
+      .find({
+        $and: [
+          {
+            _id: { $nin: Array.from(hideUserInFeed) },
+          },
+          { _id: { $ne: loggedInUser._id } },
+        ],
+      })
+      .select("firstName lastName photoUrl aboutUs skills gender")
+      .skip(skip)
+      .limit(limit);
+    res.send(feedUsers);
+  } catch (err) {
+    res.status(400).send("ERROR:" + err.message);
+  }
+});
 module.exports = userRouter;
