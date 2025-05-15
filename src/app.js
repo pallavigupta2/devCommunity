@@ -7,7 +7,12 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user")
+const cors = require("cors")
 
+app.use(cors({
+  origin:"http://localhost:5173",
+  credentials:true
+}))
 app.use(express.json()); // Middleware that will parse request data.
 app.use(cookieParser()); // Middleware that will pasrse cookie data and we are able to see that data
 

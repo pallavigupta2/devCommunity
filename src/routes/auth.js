@@ -40,7 +40,7 @@ authRouter.post("/login", async (req, res) => {
       // Create jwt token and wrap it in cookies
       const jwtToken = await userData.getJWT();
       res.cookie("token", jwtToken);
-      res.send("Logged IN Successfully...");
+      res.send(userData);
     } else {
       throw new Error("Incorrect Credentials...");
     }
