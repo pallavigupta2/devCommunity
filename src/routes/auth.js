@@ -7,7 +7,7 @@ const { validateSignupData } = require("../utils/validation");
 authRouter.post("/signup", async (req, res) => {
   try {
     validateSignupData(req);
-    const { firstName, lastName, emailId, password, skills } = req.body;
+    const { firstName, lastName, emailId, password } = req.body;
     // Encrypt password
     const encodedPassword = await bcrypt.hash(password, 10);
     // Creating instance of an user modal
@@ -16,10 +16,17 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password: encodedPassword,
-      skills,
     });
-    await userData.save();
-    res.send("Signed up succesfully!!!");
+    const isUserPresent = await userModal.findOne({ emailId });
+    if(isUserPresent){
+      throw new Error("User Already Exist.");
+      
+    }
+    const savedUser = await userData.save();
+    // Create jwt token and wrap it in cookies
+    const jwtToken = await savedUser.getJWT();
+    res.cookie("token", jwtToken);
+    res.json({ data: savedUser });
   } catch (err) {
     res.status(400).send("Error : " + err.message);
   }
@@ -45,7 +52,7 @@ authRouter.post("/login", async (req, res) => {
       throw new Error("Incorrect Credentials...");
     }
   } catch (err) {
-    res.status(400).send("Something went wrong! " + err.message);
+    res.status(400).send(err.message);
   }
 });
 
@@ -54,7 +61,7 @@ authRouter.post("/logout", (req, res) => {
   res.cookie("token", null, {
     expires: new Date(Date.now()),
   });
-  res.send("Logged out succesfully...")
+  res.send("Logged out succesfully...");
 });
 
 module.exports = authRouter;

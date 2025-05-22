@@ -35,7 +35,7 @@ const validateProfileEditData = (req) => {
     throw new Error("Not allowed to edit.");
   } else if (skills?.length > 10) {
     throw new Error("You should not allowed to enter more than 10 skills!");
-  } else if (aboutUs?.length > 50) {
+  } else if (aboutUs?.length > 200) {
     throw new Error("Enter about yourself in 100 characters only.");
   }
 };

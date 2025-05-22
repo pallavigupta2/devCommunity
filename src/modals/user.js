@@ -65,7 +65,7 @@ const userSchema = new mongoose.Schema(
     aboutUs: {
       type: String,
       default: "Hi!, I am a Software Developer.",
-      maxLength:50,
+      maxLength:200,
     },
     photoUrl: {
       type: String,

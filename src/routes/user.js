@@ -21,6 +21,7 @@ userRouter.get("/user/received/pendingrequest", userAuth, async (req, res) => {
         "aboutUs",
         "skills",
         "gender",
+        "age",
       ]);
     res.json({ data: pendingRequest });
   } catch (err) {
@@ -46,6 +47,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         "aboutUs",
         "skills",
         "gender",
+        "age",
       ])
       .populate("toUserId", [
         "firstName",
@@ -54,6 +56,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         "aboutUs",
         "skills",
         "gender",
+        "age",
       ]);
     const data = connections.map((row) => {
       if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
@@ -94,7 +97,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
           { _id: { $ne: loggedInUser._id } },
         ],
       })
-      .select("firstName lastName photoUrl aboutUs skills gender")
+      .select("firstName lastName photoUrl aboutUs skills gender age")
       .skip(skip)
       .limit(limit);
     res.send(feedUsers);
