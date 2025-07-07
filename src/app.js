@@ -7,7 +7,10 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user")
+const chatRouter = require("./routes/chat");
 const cors = require("cors")
+const http = require("http");
+
 require('dotenv').config()
 app.use(cors({
   origin:"http://localhost:5173",
@@ -20,10 +23,15 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/",userRouter)
+app.use("/",chatRouter)
+const initializeSocketConnection = require("./utils/socket");
+
+const server = http.createServer(app)
+initializeSocketConnection(server)
 connectDB()
   .then(() => {
     console.error("CONNECTION ESTABLISHED!");
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log("server is running!");
     });
   })
